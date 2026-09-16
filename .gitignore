@@ -1,0 +1,16 @@
+# ── 依赖 / 工具链 ──
+node_modules/
+.pptr/
+.workbuddy/
+
+# ── 预览与截图产物（非源码）──
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# ── 系统 / 本地 ──
+.DS_Store
+Thumbs.db
+.env
+.env.*

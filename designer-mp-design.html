@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>绘事工作台 · 微信小程序设计稿</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: #E8E2D4;
+    color: #3A3A3A;
+    min-height: 100vh;
+  }
+  .stage {
+    padding: 56px 48px 96px;
+    width: max-content;
+  }
+  .stage-header {
+    margin-bottom: 40px;
+  }
+  .stage-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #4A4238;
+    letter-spacing: 0.5px;
+  }
+  .stage-header p {
+    font-size: 13px;
+    color: #8A8175;
+    margin-top: 6px;
+    letter-spacing: 0.3px;
+  }
+  .canvas {
+    display: flex;
+    gap: 56px;
+    align-items: flex-start;
+  }
+  .screen-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .screen-label {
+    font-size: 13px;
+    color: #6B6357;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+  }
+  .screen-label .num {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: #8EC9A8;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #FAF7F2;
+    border-radius: 46px;
+    border: 11px solid #1F1F1F;
+    overflow: hidden;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.18), 0 8px 20px rgba(0,0,0,0.08);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 26px;
+    background: #1F1F1F;
+    border-radius: 0 0 18px 18px;
+    z-index: 100;
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    background: #FAF7F2;
+  }
+  /* 状态栏 */
+  .status-bar {
+    height: 44px;
+    padding: 14px 28px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2A2A2A;
+    position: relative;
+    z-index: 5;
+  }
+  .status-bar .right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .status-bar svg { display: block; }
+  /* 通用 */
+  .page-body {
+    height: calc(812px - 44px - 80px);
+    overflow: hidden;
+    position: relative;
+  }
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: #FFFFFF;
+    border-top: 1px solid #EFEAE0;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    padding-top: 10px;
+    z-index: 10;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #B0B0B0;
+    flex: 1;
+  }
+  .tab.active { color: #5FA47C; }
+  .tab .icon {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tab-add {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #8EC9A8, #5FA47C);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: -16px;
+    box-shadow: 0 6px 16px rgba(95,164,124,0.45);
+    color: #fff;
+  }
+  .tab-add svg { width: 22px; height: 22px; }
+  /* ============ 颜色变量 ============ */
+  /* 薄荷 #8EC9A8 / 深薄荷 #5FA47C / 奶油 #FAF7F2 / 米 #F5EFE3 / 暖橘 #E8A87C / 淡粉 #F4D9D9 / 文字 #3A3A3A */
+
+  /* ============ 页面1：首页统计 ============ */
+  .home-top {
+    padding: 8px 20px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .home-greet .hi { font-size: 13px; color: #8E8E8E; }
+  .home-greet .name { font-size: 20px; font-weight: 600; color: #2A2A2A; margin-top: 2px; }
+  .home-greet .date { font-size: 11px; color: #A8A8A8; margin-top: 3px; }
+  .home-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F4D9D9, #E8A87C);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff; font-weight: 600;
+    box-shadow: 0 4px 10px rgba(232,168,124,0.3);
+  }
+  .income-card {
+    margin: 0 20px;
+    background: linear-gradient(135deg, #8EC9A8 0%, #5FA47C 100%);
+    border-radius: 24px;
+    padding: 22px 24px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(95,164,124,0.25);
+  }
+  .income-card::after {
+    content: "";
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+  }
+  .income-card::before {
+    content: "";
+    position: absolute;
+    right: 20px; bottom: -50px;
+    width: 100px; height: 100px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .income-card .label { font-size: 12px; opacity: 0.9; letter-spacing: 0.5px; }
+  .income-card .amount {
+    font-size: 36px; font-weight: 700; margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+  .income-card .amount .yuan { font-size: 18px; font-weight: 500; margin-right: 2px; }
+  .income-card .trend {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.22);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+  .stat-row {
+    margin: 16px 20px 0;
+    display: flex;
+    gap: 10px;
+  }
+  .stat-mini {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .stat-mini .t { font-size: 11px; color: #8E8E8E; }
+  .stat-mini .v { font-size: 20px; font-weight: 700; color: #2A2A2A; margin-top: 4px; }
+  .stat-mini .v .unit { font-size: 11px; color: #8E8E8E; font-weight: 400; margin-left: 2px; }
+  .chart-card {
+    margin: 16px 20px 0;
+    background: #fff;
+    border-radius: 20px;
+    padding: 18px 18px 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .chart-card .title-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .chart-card .title-row .t { font-size: 14px; font-weight: 600; color: #2A2A2A; }
+  .chart-card .title-row .sub { font-size: 11px; color: #A8A8A8; }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 110px;
+    gap: 6px;
+    padding: 0 2px;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar {
+    width: 100%;
+    max-width: 16px;
+    background: linear-gradient(180deg, #C9E4D3, #8EC9A8);
+    border-radius: 6px 6px 3px 3px;
+  }
+  .bar.peak { background: linear-gradient(180deg, #8EC9A8, #5FA47C); }
+  .bar-col .m { font-size: 9px; color: #B0B0B0; }
+  .recent-title {
+    margin: 20px 20px 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .recent-title .t { font-size: 14px; font-weight: 600; color: #2A2A2A; }
+  .recent-title .more { font-size: 11px; color: #8E8E8E; }
+  .order-item {
+    margin: 0 20px 8px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .order-item .thumb {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #F4D9D9, #E8A87C);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px;
+  }
+  .order-item .info { flex: 1; min-width: 0; }
+  .order-item .info .n { font-size: 13px; color: #2A2A2A; font-weight: 500; }
+  .order-item .info .s { font-size: 11px; color: #A8A8A8; margin-top: 2px; }
+  .order-item .price { font-size: 13px; font-weight: 600; color: #5FA47C; }
+  .tag-status {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+  }
+  .tag-doing { background: #FFF4D9; color: #C18A2B; }
+  .tag-done { background: #E3F2E9; color: #5FA47C; }
+
+  /* ============ 页面2：排单 ============ */
+  .page-head {
+    padding: 4px 20px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .page-head .title { font-size: 22px; font-weight: 700; color: #2A2A2A; }
+  .seg-control {
+    display: flex;
+    background: #EFEAE0;
+    border-radius: 18px;
+    padding: 3px;
+    font-size: 12px;
+  }
+  .seg-control .seg {
+    padding: 6px 16px;
+    border-radius: 15px;
+    color: #8E8E8E;
+  }
+  .seg-control .seg.active {
+    background: #fff;
+    color: #2A2A2A;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .cal-nav {
+    padding: 0 20px 12px;
+    display: flex; justify-content: center; align-items: center; gap: 20px;
+  }
+  .cal-nav .m { font-size: 15px; font-weight: 600; color: #2A2A2A; }
+  .cal-nav svg { color: #8E8E8E; }
+  .cal-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 12px;
+    margin-bottom: 6px;
+  }
+  .cal-week div {
+    text-align: center;
+    font-size: 11px;
+    color: #A8A8A8;
+    padding: 6px 0;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 12px;
+    gap: 2px;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #5A5A5A;
+    position: relative;
+  }
+  .cal-cell.dim { color: #C8C8C8; }
+  .cal-cell.today {
+    background: #E3F2E9;
+    color: #5FA47C;
+    font-weight: 700;
+  }
+  .cal-cell.sel {
+    background: #5FA47C;
+    color: #fff;
+    font-weight: 700;
+  }
+  .dot-row {
+    display: flex; gap: 2px;
+    height: 4px;
+  }
+  .dot { width: 4px; height: 4px; border-radius: 50%; background: #E8A87C; }
+  .dot.green { background: #5FA47C; }
+  .dot.gray { background: #C8C8C8; }
+  /* 日历下方图例 */
+  .cal-legend {
+    margin: 14px 20px 4px;
+    background: #FFFCF5;
+    border: 1px solid #EFEAE0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .cal-legend .ll {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: #6B6357;
+  }
+  .cal-legend .ll .d {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .cal-legend .ll .d.g { background: #5FA47C; }
+  .cal-legend .ll .d.o { background: #E8A87C; }
+  .cal-legend .ll .d.gr { background: #C8C8C8; }
+  .day-detail {
+    margin: 12px 20px 0;
+  }
+  .day-detail .dh {
+    font-size: 13px; color: #2A2A2A; font-weight: 600;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .day-detail .dh .cnt {
+    font-size: 10px; color: #5FA47C; background: #E3F2E9;
+    padding: 2px 8px; border-radius: 8px;
+  }
+  .schedule-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    border-left: 3px solid #5FA47C;
+  }
+  .schedule-card.urgent { border-left-color: #E8A87C; }
+  .schedule-card .top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .schedule-card .cust { font-size: 13px; font-weight: 600; color: #2A2A2A; }
+  .schedule-card .time { font-size: 11px; color: #8E8E8E; }
+  .schedule-card .prod { font-size: 11px; color: #8E8E8E; line-height: 1.5; }
+  .schedule-card .badge {
+    display: inline-block;
+    font-size: 9px; padding: 2px 6px;
+    background: #FFF4D9; color: #C18A2B;
+    border-radius: 4px; margin-left: 4px;
+  }
+
+  /* ============ 页面3：加单 ============ */
+  .add-head {
+    padding: 4px 20px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .add-head .back { width: 24px; height: 24px; color: #2A2A2A; }
+  .add-head .t { font-size: 16px; font-weight: 600; color: #2A2A2A; }
+  .add-head .draft {
+    font-size: 11px; color: #5FA47C;
+    background: #E3F2E9; padding: 5px 12px; border-radius: 12px;
+  }
+  .steps {
+    margin: 0 20px 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .step {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .step .circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #EFEAE0;
+    color: #8E8E8E;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step.active .circle { background: #5FA47C; color: #fff; }
+  .step.done .circle { background: #8EC9A8; color: #fff; }
+  .step .st { font-size: 10px; color: #8E8E8E; }
+  .step.active .st { color: #5FA47C; font-weight: 600; }
+  .step-line {
+    flex: 0 0 16px;
+    height: 1px;
+    background: #E5DFD3;
+    margin-top: -14px;
+  }
+  .form-section {
+    margin: 0 20px 16px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 4px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .form-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #F2EDE3;
+  }
+  .form-row:last-child { border-bottom: none; }
+  .form-row .lbl { font-size: 13px; color: #2A2A2A; }
+  .form-row .lbl .req { color: #E8A87C; margin-left: 2px; }
+  .form-row .val {
+    font-size: 13px; color: #8E8E8E;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .form-row .val.input { color: #2A2A2A; }
+  .form-row .arrow { color: #C8C8C8; }
+  .switch {
+    width: 38px; height: 22px; background: #5FA47C; border-radius: 12px;
+    position: relative;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff; border-radius: 50%;
+    top: 2px; right: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .textarea-row {
+    padding: 14px 0;
+  }
+  .textarea-row .lbl { display: block; margin-bottom: 8px; }
+  .textarea-row .ta {
+    width: 100%; min-height: 50px;
+    border: none; outline: none; resize: none;
+    font-size: 12px; color: #2A2A2A;
+    background: #FAF7F2;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: inherit;
+  }
+  .textarea-row .ta::placeholder { color: #C8C8C8; }
+  .add-section-title {
+    margin: 4px 20px 10px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .add-section-title .t { font-size: 13px; font-weight: 600; color: #2A2A2A; }
+  .add-section-title .add-btn {
+    font-size: 11px; color: #5FA47C;
+    background: #E3F2E9; padding: 4px 12px; border-radius: 12px;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .prod-pick {
+    margin: 0 20px 8px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  }
+  .prod-pick .thumb {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #C9DEE0, #8EC9A8);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px;
+  }
+  .prod-pick .info { flex: 1; }
+  .prod-pick .info .n { font-size: 13px; color: #2A2A2A; font-weight: 500; }
+  .prod-pick .info .p { font-size: 11px; color: #8E8E8E; margin-top: 3px; }
+  .prod-pick .qty {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #2A2A2A;
+  }
+  .prod-pick .qty .b {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #F5EFE3; color: #5A5A5A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .receipt {
+    margin: 14px 20px 0;
+    background: #FFFCF5;
+    border: 1px dashed #D9CFB8;
+    border-radius: 16px;
+    padding: 16px 18px;
+    position: relative;
+  }
+  .receipt::before, .receipt::after {
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    background: #FAF7F2;
+    border-radius: 50%;
+    top: 50%; transform: translateY(-50%);
+  }
+  .receipt::before { left: -8px; }
+  .receipt::after { right: -8px; }
+  .receipt .rh {
+    text-align: center;
+    font-size: 12px; font-weight: 600; color: #2A2A2A;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #D9CFB8;
+    margin-bottom: 10px;
+  }
+  .receipt .rl {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #5A5A5A;
+    padding: 4px 0;
+  }
+  .receipt .rl .x { color: #A8A8A8; margin: 0 4px; }
+  .receipt .rt {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px dashed #D9CFB8;
+  }
+  .receipt .rt .t { font-size: 12px; color: #2A2A2A; }
+  .receipt .rt .v {
+    font-size: 18px; font-weight: 700; color: #5FA47C;
+  }
+  .add-foot {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 20px 24px;
+    background: linear-gradient(180deg, rgba(250,247,242,0), #FAF7F2 30%);
+    display: flex; gap: 10px;
+  }
+  .btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    border: none;
+  }
+  .btn-ghost {
+    background: #fff; color: #5FA47C;
+    border: 1px solid #8EC9A8;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #8EC9A8, #5FA47C);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(95,164,124,0.3);
+  }
+
+  /* ============ 页面4：仓库 ============ */
+  .ware-head {
+    padding: 4px 20px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ware-head .title { font-size: 22px; font-weight: 700; color: #2A2A2A; flex-shrink: 0; }
+  .search-box {
+    flex: 1;
+    height: 32px;
+    background: #fff;
+    border-radius: 16px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .search-box svg { color: #A8A8A8; }
+  .search-box input {
+    border: none; outline: none;
+    font-size: 12px; color: #2A2A2A;
+    background: transparent; flex: 1;
+    font-family: inherit;
+  }
+  .search-box input::placeholder { color: #C8C8C8; }
+  .ware-add {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #8EC9A8, #5FA47C);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(95,164,124,0.35);
+  }
+  .cat-tabs {
+    display: flex; gap: 8px;
+    padding: 0 20px 14px;
+    overflow-x: auto;
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .cat-tab {
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    background: #fff;
+    color: #8E8E8E;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .cat-tab.active {
+    background: #5FA47C; color: #fff;
+  }
+  .prod-grid {
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .prod-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .prod-card .img {
+    height: 110px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #fff;
+    position: relative;
+  }
+  .prod-card .img.c1 { background: linear-gradient(135deg, #F4D9D9, #E8A87C); }
+  .prod-card .img.c2 { background: linear-gradient(135deg, #C9DEE0, #8EC9A8); }
+  .prod-card .img.c3 { background: linear-gradient(135deg, #E5D9E8, #B8A4C9); }
+  .prod-card .img.c4 { background: linear-gradient(135deg, #FFF4D9, #E8C57C); }
+  .prod-card .img.c5 { background: linear-gradient(135deg, #D9E8E5, #7FB69E); }
+  .prod-card .img.c6 { background: linear-gradient(135deg, #F4D9D9, #C97C8A); }
+  .prod-card .edit-btn {
+    position: absolute; top: 8px; right: 8px;
+    width: 24px; height: 24px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #5FA47C;
+  }
+  .prod-card .info {
+    padding: 10px 12px;
+  }
+  .prod-card .info .n { font-size: 12px; color: #2A2A2A; font-weight: 500; }
+  .prod-card .info .meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 4px;
+  }
+  .prod-card .info .p { font-size: 13px; color: #5FA47C; font-weight: 700; }
+  .prod-card .info .s { font-size: 10px; color: #A8A8A8; }
+
+  /* ============ 页面5：我的 ============ */
+  .me-header {
+    padding: 8px 20px 0;
+    background: linear-gradient(180deg, #E3F2E9 0%, #FAF7F2 100%);
+    padding-bottom: 18px;
+  }
+  .me-top {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 0 16px;
+  }
+  .me-avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F4D9D9, #E8A87C);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 600;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .me-info .nm { font-size: 17px; font-weight: 700; color: #2A2A2A; }
+  .me-info .desc {
+    font-size: 11px; color: #5FA47C;
+    background: #fff; padding: 3px 10px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 5px;
+  }
+  .me-stats {
+    display: flex;
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .me-stat {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .me-stat:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0; top: 50%; transform: translateY(-50%);
+    width: 1px; height: 24px;
+    background: #EFEAE0;
+  }
+  .me-stat .v { font-size: 17px; font-weight: 700; color: #2A2A2A; }
+  .me-stat .v .u { font-size: 10px; color: #8E8E8E; font-weight: 400; }
+  .me-stat .t { font-size: 10px; color: #8E8E8E; margin-top: 3px; }
+  .me-menu {
+    margin: 16px 20px 0;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .menu-item {
+    display: flex; align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #F5EFE3;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item .mi-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .menu-item .mi-name { flex: 1; font-size: 13px; color: #2A2A2A; }
+  .menu-item .mi-arrow { color: #C8C8C8; }
+  .menu-item .mi-tag {
+    font-size: 10px; color: #E8A87C;
+    background: #FFF4D9;
+    padding: 2px 6px; border-radius: 4px;
+    margin-right: 8px;
+  }
+
+  .legend {
+    margin-top: 60px;
+    padding: 24px 32px;
+    background: #FFFCF5;
+    border-radius: 20px;
+    border: 1px solid #E5DFD3;
+    width: max-content;
+  }
+  .legend h3 {
+    font-size: 14px; color: #4A4238; margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .legend ul { list-style: none; }
+  .legend li {
+    font-size: 12px; color: #6B6357;
+    line-height: 1.9;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .legend .sw {
+    width: 14px; height: 14px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="stage-header">
+    <h1>绘事工作台 · 微信小程序设计稿</h1>
+    <p>设计师接单管理后台 · 简约小清新风格 · 5 屏概览</p>
+  </div>
+
+  <div class="canvas">
+
+    <!-- ============ 页面1：首页统计 ============ -->
+    <div class="screen-block">
+      <div class="screen-label"><span class="num">1</span>首页 · 收入统计</div>
+      <div class="phone">
+        <div class="screen">
+          <!-- 状态栏 -->
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right">
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="6" width="2.5" height="4" rx="0.5" fill="#2A2A2A"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5" fill="#2A2A2A"/><rect x="7" y="2" width="2.5" height="8" rx="0.5" fill="#2A2A2A"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5" fill="#2A2A2A"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 2.5C8.8 2.5 10.5 3.2 11.8 4.4L13 3.2C11.4 1.7 9.3 0.8 7 0.8S2.6 1.7 1 3.2L2.2 4.4C3.5 3.2 5.2 2.5 7 2.5Z" fill="#2A2A2A"/><path d="M7 5.5C8 5.5 8.9 5.9 9.6 6.5L10.8 5.3C9.8 4.4 8.5 3.8 7 3.8S4.2 4.4 3.2 5.3L4.4 6.5C5.1 5.9 6 5.5 7 5.5Z" fill="#2A2A2A"/><circle cx="7" cy="8.5" r="1.3" fill="#2A2A2A"/></svg>
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#2A2A2A" fill="none"/><rect x="2" y="2" width="14" height="6" rx="1" fill="#2A2A2A"/><rect x="19" y="3" width="1.5" height="4" rx="0.5" fill="#2A2A2A"/></svg>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="home-top">
+              <div class="home-greet">
+                <div class="hi">下午好</div>
+                <div class="name">小绘</div>
+                <div class="date">2026年9月7日 · 周一</div>
+              </div>
+              <div class="home-avatar">绘</div>
+            </div>
+
+            <div class="income-card">
+              <div class="label">本月累计收入</div>
+              <div class="amount"><span class="yuan">¥</span>12,580</div>
+              <div class="trend">
+                <svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 2L8 6H6.5V8H3.5V6H2L5 2Z" fill="#fff"/></svg>
+                较上月 +18%
+              </div>
+            </div>
+
+            <div class="stat-row">
+              <div class="stat-mini">
+                <div class="t">本月单数</div>
+                <div class="v">28<span class="unit">单</span></div>
+              </div>
+              <div class="stat-mini">
+                <div class="t">待完成</div>
+                <div class="v">5<span class="unit">单</span></div>
+              </div>
+              <div class="stat-mini">
+                <div class="t">客户数</div>
+                <div class="v">12<span class="unit">位</span></div>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="title-row">
+                <div class="t">2026 年度收入</div>
+                <div class="sub">单位：千元</div>
+              </div>
+              <div class="chart-bars">
+                <div class="bar-col"><div class="bar" style="height:35%"></div><div class="m">1</div></div>
+                <div class="bar-col"><div class="bar" style="height:42%"></div><div class="m">2</div></div>
+                <div class="bar-col"><div class="bar" style="height:55%"></div><div class="m">3</div></div>
+                <div class="bar-col"><div class="bar" style="height:48%"></div><div class="m">4</div></div>
+                <div class="bar-col"><div class="bar" style="height:62%"></div><div class="m">5</div></div>
+                <div class="bar-col"><div class="bar" style="height:70%"></div><div class="m">6</div></div>
+                <div class="bar-col"><div class="bar" style="height:58%"></div><div class="m">7</div></div>
+                <div class="bar-col"><div class="bar peak" style="height:88%"></div><div class="m">8</div></div>
+                <div class="bar-col"><div class="bar peak" style="height:75%"></div><div class="m">9</div></div>
+                <div class="bar-col"><div class="bar" style="height:0%"></div><div class="m">10</div></div>
+                <div class="bar-col"><div class="bar" style="height:0%"></div><div class="m">11</div></div>
+                <div class="bar-col"><div class="bar" style="height:0%"></div><div class="m">12</div></div>
+              </div>
+            </div>
+
+            <div class="recent-title">
+              <div class="t">最近订单</div>
+              <div class="more">查看全部 ›</div>
+            </div>
+            <div class="order-item">
+              <div class="thumb">立</div>
+              <div class="info">
+                <div class="n">立绘单人 · 半身<span class="tag-status tag-doing">进行中</span></div>
+                <div class="s">林夕 · 09/15 交付</div>
+              </div>
+              <div class="price">¥300</div>
+            </div>
+            <div class="order-item">
+              <div class="thumb" style="background:linear-gradient(135deg,#C9DEE0,#8EC9A8)">Q</div>
+              <div class="info">
+                <div class="n">Q版头像<span class="tag-status tag-done">已完成</span></div>
+                <div class="s">阿白 · 09/03 交付</div>
+              </div>
+              <div class="price">¥150</div>
+            </div>
+          </div>
+
+          <!-- Tab Bar -->
+          <div class="tab-bar">
+            <div class="tab active">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 4L21 12V20H14V14H10V20H3V12Z" fill="currentColor"/></svg></div>
+              首页
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2"/><line x1="8" y1="3" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="3" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              排单
+            </div>
+            <div class="tab">
+              <div class="tab-add"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9L6 6H18L21 9V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V9Z" stroke="currentColor" stroke-width="2"/><path d="M9 13C9 14.7 10.3 16 12 16C13.7 16 15 14.7 15 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              仓库
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              我的
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 页面2：排单 ============ -->
+    <div class="screen-block">
+      <div class="screen-label"><span class="num">2</span>排单 · 日历视图</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right">
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="6" width="2.5" height="4" rx="0.5" fill="#2A2A2A"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5" fill="#2A2A2A"/><rect x="7" y="2" width="2.5" height="8" rx="0.5" fill="#2A2A2A"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5" fill="#2A2A2A"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 2.5C8.8 2.5 10.5 3.2 11.8 4.4L13 3.2C11.4 1.7 9.3 0.8 7 0.8S2.6 1.7 1 3.2L2.2 4.4C3.5 3.2 5.2 2.5 7 2.5Z" fill="#2A2A2A"/><path d="M7 5.5C8 5.5 8.9 5.9 9.6 6.5L10.8 5.3C9.8 4.4 8.5 3.8 7 3.8S4.2 4.4 3.2 5.3L4.4 6.5C5.1 5.9 6 5.5 7 5.5Z" fill="#2A2A2A"/><circle cx="7" cy="8.5" r="1.3" fill="#2A2A2A"/></svg>
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#2A2A2A" fill="none"/><rect x="2" y="2" width="14" height="6" rx="1" fill="#2A2A2A"/><rect x="19" y="3" width="1.5" height="4" rx="0.5" fill="#2A2A2A"/></svg>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="page-head">
+              <div class="title">排单</div>
+              <div class="seg-control">
+                <div class="seg active">日历</div>
+                <div class="seg">列表</div>
+              </div>
+            </div>
+
+            <div class="cal-nav">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="m">2026 年 9 月</div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+
+            <div class="cal-week">
+              <div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div>
+            </div>
+            <div class="cal-grid">
+              <!-- 第一周（8月底+9月初） -->
+              <div class="cal-cell dim">31<div class="dot-row"></div></div>
+              <div class="cal-cell">1<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">2<div class="dot-row"><div class="dot"></div><div class="dot green"></div></div></div>
+              <div class="cal-cell">3<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">4<div class="dot-row"></div></div>
+              <div class="cal-cell">5<div class="dot-row"><div class="dot"></div></div></div>
+              <div class="cal-cell">6<div class="dot-row"></div></div>
+              <!-- 第二周 -->
+              <div class="cal-cell today">7<div class="dot-row"><div class="dot"></div><div class="dot green"></div></div></div>
+              <div class="cal-cell sel">8<div class="dot-row"><div class="dot"></div></div></div>
+              <div class="cal-cell">9<div class="dot-row"></div></div>
+              <div class="cal-cell">10<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">11<div class="dot-row"><div class="dot"></div><div class="dot green"></div><div class="dot green"></div></div></div>
+              <div class="cal-cell">12<div class="dot-row"></div></div>
+              <div class="cal-cell">13<div class="dot-row"></div></div>
+              <!-- 第三周 -->
+              <div class="cal-cell">14<div class="dot-row"><div class="dot"></div></div></div>
+              <div class="cal-cell">15<div class="dot-row"><div class="dot"></div><div class="dot green"></div></div></div>
+              <div class="cal-cell">16<div class="dot-row"></div></div>
+              <div class="cal-cell">17<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">18<div class="dot-row"><div class="dot"></div></div></div>
+              <div class="cal-cell">19<div class="dot-row"></div></div>
+              <div class="cal-cell">20<div class="dot-row"></div></div>
+              <!-- 第四周 -->
+              <div class="cal-cell">21<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">22<div class="dot-row"></div></div>
+              <div class="cal-cell">23<div class="dot-row"><div class="dot"></div></div></div>
+              <div class="cal-cell">24<div class="dot-row"></div></div>
+              <div class="cal-cell">25<div class="dot-row"><div class="dot green"></div></div></div>
+              <div class="cal-cell">26<div class="dot-row"></div></div>
+              <div class="cal-cell">27<div class="dot-row"></div></div>
+              <!-- 第五周 -->
+              <div class="cal-cell">28<div class="dot-row"></div></div>
+              <div class="cal-cell">29<div class="dot-row"></div></div>
+              <div class="cal-cell">30<div class="dot-row"></div></div>
+              <div class="cal-cell dim">1<div class="dot-row"></div></div>
+              <div class="cal-cell dim">2<div class="dot-row"></div></div>
+              <div class="cal-cell dim">3<div class="dot-row"></div></div>
+              <div class="cal-cell dim">4<div class="dot-row"></div></div>
+            </div>
+
+            <!-- 日历图例 -->
+            <div class="cal-legend">
+              <div class="ll"><span class="d g"></span>正常订单</div>
+              <div class="ll"><span class="d o"></span>加急订单</div>
+              <div class="ll"><span class="d gr"></span>已完成</div>
+              <div class="ll" style="color:#A8A8A8;">多点=多单</div>
+            </div>
+
+            <div class="day-detail">
+              <div class="dh">9月8日 周二 <span class="cnt">1 单</span></div>
+              <div class="schedule-card">
+                <div class="top">
+                  <div class="cust">林夕 · 立绘半身</div>
+                  <div class="time">09/15</div>
+                </div>
+                <div class="prod">立绘单人 · 半身 × 1<span class="badge">3天</span></div>
+              </div>
+              <div class="schedule-card urgent">
+                <div class="top">
+                  <div class="cust">阿白 · Q版头像</div>
+                  <div class="time">09/10</div>
+                </div>
+                <div class="prod">Q版头像 × 2<span class="badge">加急</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 4L21 12V20H14V14H10V20H3V12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+              首页
+            </div>
+            <div class="tab active">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" fill="currentColor"/><line x1="4" y1="9" x2="20" y2="9" stroke="#fff" stroke-width="2"/><line x1="8" y1="3" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="3" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              排单
+            </div>
+            <div class="tab">
+              <div class="tab-add"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9L6 6H18L21 9V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V9Z" stroke="currentColor" stroke-width="2"/><path d="M9 13C9 14.7 10.3 16 12 16C13.7 16 15 14.7 15 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              仓库
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              我的
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 页面3：加单 ============ -->
+    <div class="screen-block">
+      <div class="screen-label"><span class="num">3</span>加单 · 三步流程</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right">
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="6" width="2.5" height="4" rx="0.5" fill="#2A2A2A"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5" fill="#2A2A2A"/><rect x="7" y="2" width="2.5" height="8" rx="0.5" fill="#2A2A2A"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5" fill="#2A2A2A"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 2.5C8.8 2.5 10.5 3.2 11.8 4.4L13 3.2C11.4 1.7 9.3 0.8 7 0.8S2.6 1.7 1 3.2L2.2 4.4C3.5 3.2 5.2 2.5 7 2.5Z" fill="#2A2A2A"/><path d="M7 5.5C8 5.5 8.9 5.9 9.6 6.5L10.8 5.3C9.8 4.4 8.5 3.8 7 3.8S4.2 4.4 3.2 5.3L4.4 6.5C5.1 5.9 6 5.5 7 5.5Z" fill="#2A2A2A"/><circle cx="7" cy="8.5" r="1.3" fill="#2A2A2A"/></svg>
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#2A2A2A" fill="none"/><rect x="2" y="2" width="14" height="6" rx="1" fill="#2A2A2A"/><rect x="19" y="3" width="1.5" height="4" rx="0.5" fill="#2A2A2A"/></svg>
+            </div>
+          </div>
+          <div class="page-body" style="height: calc(812px - 44px); padding-bottom: 80px; overflow-y: auto;">
+            <div class="add-head">
+              <svg class="back" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="#2A2A2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div class="t">新建订单</div>
+              <div class="draft">存草稿</div>
+            </div>
+
+            <div class="steps">
+              <div class="step active">
+                <div class="circle">1</div>
+                <div class="st">加单信息</div>
+              </div>
+              <div class="step-line"></div>
+              <div class="step">
+                <div class="circle">2</div>
+                <div class="st">制品信息</div>
+              </div>
+              <div class="step-line"></div>
+              <div class="step">
+                <div class="circle">3</div>
+                <div class="st">小票预览</div>
+              </div>
+            </div>
+
+            <!-- 加单信息 -->
+            <div class="form-section">
+              <div class="form-row">
+                <div class="lbl">客户<span class="req">*</span></div>
+                <div class="val">选择客户
+                  <svg class="arrow" width="10" height="10" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18" stroke="#C8C8C8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="lbl">交付日期<span class="req">*</span></div>
+                <div class="val input">2026/09/15
+                  <svg width="12" height="12" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#8E8E8E" stroke-width="2" fill="none"/><line x1="3" y1="9" x2="21" y2="9" stroke="#8E8E8E" stroke-width="2"/><line x1="8" y1="2" x2="8" y2="6" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="2" x2="16" y2="6" stroke="#8E8E8E" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="lbl">加急</div>
+                <div class="val"><div class="switch"></div></div>
+              </div>
+              <div class="form-row textarea-row">
+                <div class="lbl">备注</div>
+                <textarea class="ta" placeholder="请输入客户要求、画风参考等…">客户希望偏日系赛璐璐风，发色按设定稿</textarea>
+              </div>
+            </div>
+
+            <!-- 制品信息 -->
+            <div class="add-section-title">
+              <div class="t">已选制品 · 2</div>
+              <div class="add-btn">
+                <svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#5FA47C" stroke-width="2.5" stroke-linecap="round"/></svg>
+                添加
+              </div>
+            </div>
+            <div class="prod-pick">
+              <div class="thumb">立</div>
+              <div class="info">
+                <div class="n">立绘单人 · 半身</div>
+                <div class="p">¥300 / 件</div>
+              </div>
+              <div class="qty">
+                <div class="b">−</div>
+                <span>1</span>
+                <div class="b">+</div>
+              </div>
+            </div>
+            <div class="prod-pick">
+              <div class="thumb" style="background:linear-gradient(135deg,#C9DEE0,#8EC9A8)">Q</div>
+              <div class="info">
+                <div class="n">Q版头像</div>
+                <div class="p">¥150 / 件</div>
+              </div>
+              <div class="qty">
+                <div class="b">−</div>
+                <span>2</span>
+                <div class="b">+</div>
+              </div>
+            </div>
+
+            <!-- 小票预览 -->
+            <div class="add-section-title">
+              <div class="t">小票预览</div>
+            </div>
+            <div class="receipt">
+              <div class="rh">订 单 预 览</div>
+              <div class="rl"><span>立绘单人·半身</span><span>¥300<span class="x">×1</span></span></div>
+              <div class="rl"><span>Q版头像</span><span>¥150<span class="x">×2</span></span></div>
+              <div class="rl"><span>加急费</span><span>¥50</span></div>
+              <div class="rt">
+                <div class="t">合计</div>
+                <div class="v">¥650</div>
+              </div>
+            </div>
+
+            <div class="add-foot">
+              <button class="btn btn-ghost">保存草稿</button>
+              <button class="btn btn-primary">提交订单</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 页面4：仓库 ============ -->
+    <div class="screen-block">
+      <div class="screen-label"><span class="num">4</span>仓库 · 制品管理</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right">
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="6" width="2.5" height="4" rx="0.5" fill="#2A2A2A"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5" fill="#2A2A2A"/><rect x="7" y="2" width="2.5" height="8" rx="0.5" fill="#2A2A2A"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5" fill="#2A2A2A"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 2.5C8.8 2.5 10.5 3.2 11.8 4.4L13 3.2C11.4 1.7 9.3 0.8 7 0.8S2.6 1.7 1 3.2L2.2 4.4C3.5 3.2 5.2 2.5 7 2.5Z" fill="#2A2A2A"/><path d="M7 5.5C8 5.5 8.9 5.9 9.6 6.5L10.8 5.3C9.8 4.4 8.5 3.8 7 3.8S4.2 4.4 3.2 5.3L4.4 6.5C5.1 5.9 6 5.5 7 5.5Z" fill="#2A2A2A"/><circle cx="7" cy="8.5" r="1.3" fill="#2A2A2A"/></svg>
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#2A2A2A" fill="none"/><rect x="2" y="2" width="14" height="6" rx="1" fill="#2A2A2A"/><rect x="19" y="3" width="1.5" height="4" rx="0.5" fill="#2A2A2A"/></svg>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="ware-head">
+              <div class="title">仓库</div>
+              <div class="search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#A8A8A8" stroke-width="2"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#A8A8A8" stroke-width="2" stroke-linecap="round"/></svg>
+                <input placeholder="搜索制品" />
+              </div>
+              <div class="ware-add">
+                <svg width="16" height="16" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+
+            <div class="cat-tabs">
+              <div class="cat-tab active">全部</div>
+              <div class="cat-tab">立绘</div>
+              <div class="cat-tab">头像</div>
+              <div class="cat-tab">表情包</div>
+              <div class="cat-tab">海报</div>
+              <div class="cat-tab">其他</div>
+            </div>
+
+            <div class="prod-grid">
+              <div class="prod-card">
+                <div class="img c1">
+                  立绘
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">立绘单人·半身</div>
+                  <div class="meta">
+                    <div class="p">¥300</div>
+                    <div class="s">已售 15</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prod-card">
+                <div class="img c2">
+                  Q版
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">Q版头像</div>
+                  <div class="meta">
+                    <div class="p">¥150</div>
+                    <div class="s">已售 32</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prod-card">
+                <div class="img c3">
+                  表情
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">表情包·10张</div>
+                  <div class="meta">
+                    <div class="p">¥200</div>
+                    <div class="s">已售 8</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prod-card">
+                <div class="img c4">
+                  海报
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">商业海报</div>
+                  <div class="meta">
+                    <div class="p">¥800</div>
+                    <div class="s">已售 3</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prod-card">
+                <div class="img c5">
+                  全身
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">立绘单人·全身</div>
+                  <div class="meta">
+                    <div class="p">¥500</div>
+                    <div class="s">已售 11</div>
+                  </div>
+                </div>
+              </div>
+              <div class="prod-card">
+                <div class="img c6">
+                  头像
+                  <div class="edit-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M3 17L3 21L7 21L18 10L14 6L3 17Z" fill="#5FA47C" stroke="#5FA47C" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+                </div>
+                <div class="info">
+                  <div class="n">情侣头像</div>
+                  <div class="meta">
+                    <div class="p">¥280</div>
+                    <div class="s">已售 6</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 4L21 12V20H14V14H10V20H3V12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+              首页
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2"/><line x1="8" y1="3" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="3" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              排单
+            </div>
+            <div class="tab">
+              <div class="tab-add"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="tab active">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9L6 6H18L21 9V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V9Z" fill="currentColor"/><path d="M9 13C9 14.7 10.3 16 12 16C13.7 16 15 14.7 15 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+              仓库
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              我的
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 页面5：我的 ============ -->
+    <div class="screen-block">
+      <div class="screen-label"><span class="num">5</span>我的 · 个人中心</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right">
+              <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="6" width="2.5" height="4" rx="0.5" fill="#2A2A2A"/><rect x="3.5" y="4" width="2.5" height="6" rx="0.5" fill="#2A2A2A"/><rect x="7" y="2" width="2.5" height="8" rx="0.5" fill="#2A2A2A"/><rect x="10.5" y="0" width="2.5" height="10" rx="0.5" fill="#2A2A2A"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M7 2.5C8.8 2.5 10.5 3.2 11.8 4.4L13 3.2C11.4 1.7 9.3 0.8 7 0.8S2.6 1.7 1 3.2L2.2 4.4C3.5 3.2 5.2 2.5 7 2.5Z" fill="#2A2A2A"/><path d="M7 5.5C8 5.5 8.9 5.9 9.6 6.5L10.8 5.3C9.8 4.4 8.5 3.8 7 3.8S4.2 4.4 3.2 5.3L4.4 6.5C5.1 5.9 6 5.5 7 5.5Z" fill="#2A2A2A"/><circle cx="7" cy="8.5" r="1.3" fill="#2A2A2A"/></svg>
+              <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#2A2A2A" fill="none"/><rect x="2" y="2" width="14" height="6" rx="1" fill="#2A2A2A"/><rect x="19" y="3" width="1.5" height="4" rx="0.5" fill="#2A2A2A"/></svg>
+            </div>
+          </div>
+          <div class="page-body" style="height: calc(812px - 44px - 80px);">
+            <div class="me-header">
+              <div class="me-top">
+                <div class="me-avatar">绘</div>
+                <div class="me-info">
+                  <div class="nm">小绘</div>
+                  <div class="desc">自由插画师 · 接单中</div>
+                </div>
+              </div>
+              <div class="me-stats">
+                <div class="me-stat">
+                  <div class="v">86<span class="u">单</span></div>
+                  <div class="t">总订单</div>
+                </div>
+                <div class="me-stat">
+                  <div class="v">¥45<span class="u">k</span></div>
+                  <div class="t">总收入</div>
+                </div>
+                <div class="me-stat">
+                  <div class="v">23<span class="u">位</span></div>
+                  <div class="t">客户数</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="me-menu">
+              <div class="menu-item">
+                <div class="mi-icon" style="background:#E3F2E9">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#5FA47C" stroke-width="2"/><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21" stroke="#5FA47C" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="mi-name">客户管理</div>
+                <div class="mi-tag">23 位</div>
+                <svg class="mi-arrow" width="12" height="12" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18" stroke="#C8C8C8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="menu-item">
+                <div class="mi-icon" style="background:#FFF4D9">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6C4 4.9 4.9 4 6 4H18C19.1 4 20 4.9 20 6V16C20 17.1 19.1 18 18 18H8L4 21V6Z" stroke="#C18A2B" stroke-width="2" stroke-linejoin="round"/><line x1="8" y1="9" x2="16" y2="9" stroke="#C18A2B" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="13" x2="13" y2="13" stroke="#C18A2B" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="mi-name">意见反馈</div>
+                <svg class="mi-arrow" width="12" height="12" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18" stroke="#C8C8C8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="menu-item">
+                <div class="mi-icon" style="background:#F4D9D9">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#C97C8A" stroke-width="2"/><line x1="12" y1="10" x2="12" y2="16" stroke="#C97C8A" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.2" fill="#C97C8A"/></svg>
+                </div>
+                <div class="mi-name">使用说明</div>
+                <svg class="mi-arrow" width="12" height="12" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18" stroke="#C8C8C8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="menu-item">
+                <div class="mi-icon" style="background:#EFE6F5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#B8A4C9" stroke-width="2"/><path d="M19.4 12C19.4 11.6 19.4 11.3 19.3 10.9L20.8 9.7L19.3 7.1L17.5 7.8C17 7.4 16.5 7.1 15.9 6.9L15.6 5H12.4L12.1 6.9C11.6 7.1 11 7.4 10.5 7.8L8.7 7.1L7.2 9.7L8.7 10.9C8.6 11.3 8.6 11.6 8.6 12C8.6 12.4 8.6 12.7 8.7 13.1L7.2 14.3L8.7 16.9L10.5 16.2C11 16.6 11.5 16.9 12.1 17.1L12.4 19H15.6L15.9 17.1C16.4 16.9 17 16.6 17.5 16.2L19.3 16.9L20.8 14.3L19.3 13.1C19.4 12.7 19.4 12.4 19.4 12Z" stroke="#B8A4C9" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="mi-name">设置</div>
+                <svg class="mi-arrow" width="12" height="12" viewBox="0 0 24 24"><path d="M9 6L15 12L9 18" stroke="#C8C8C8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+
+            <div style="text-align:center; padding: 28px 0 0; font-size:11px; color:#C8C8C8;">
+              绘事工作台 v1.0.0
+            </div>
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 4L21 12V20H14V14H10V20H3V12Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+              首页
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/><line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2"/><line x1="8" y1="3" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="16" y1="3" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              排单
+            </div>
+            <div class="tab">
+              <div class="tab-add"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="tab">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 9L6 6H18L21 9V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V9Z" stroke="currentColor" stroke-width="2"/><path d="M9 13C9 14.7 10.3 16 12 16C13.7 16 15 14.7 15 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+              仓库
+            </div>
+            <div class="tab active">
+              <div class="icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 21C4 16.6 7.6 13 12 13C16.4 13 20 16.6 20 21" fill="currentColor"/></svg></div>
+              我的
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 日历点图例 -->
+  <div class="legend" style="margin-top:24px; margin-left:24px;">
+    <h3>日历点 · 图例说明</h3>
+    <ul>
+      <li>
+        <span style="display:inline-flex; gap:4px; align-items:center; margin-right:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#5FA47C"></span>
+        </span>
+        绿色点 = 已排单的正常订单
+      </li>
+      <li>
+        <span style="display:inline-flex; gap:4px; align-items:center; margin-right:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#E8A87C"></span>
+        </span>
+        橘色点 = 加急订单
+      </li>
+      <li>
+        <span style="display:inline-flex; gap:4px; align-items:center; margin-right:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#C8C8C8"></span>
+        </span>
+        灰色点 = 已完成订单
+      </li>
+      <li>
+        <span style="display:inline-flex; gap:4px; align-items:center; margin-right:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#5FA47C"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#E8A87C"></span>
+          <span style="width:8px;height:8px;border-radius:50%;background:#5FA47C"></span>
+        </span>
+        多个点 = 当日有多笔订单（颜色混合表示类型）
+      </li>
+      <li style="color:#A8A8A8; font-size:11px; margin-top:6px;">
+        示例：9/11 下方 1 橘 + 2 绿 = 当日有 1 单加急 + 2 单正常
+      </li>
+    </ul>
+  </div>
+
+  <!-- 设计说明 -->
+  <div class="legend" style="margin-left:24px;">
+    <h3>设计说明</h3>
+    <ul>
+      <li><span class="sw" style="background:#8EC9A8"></span>主色 · 薄荷绿 #8EC9A8（活泼、清新、信任）</li>
+      <li><span class="sw" style="background:#5FA47C"></span>强调色 · 深薄荷 #5FA47C（按钮、数字强调）</li>
+      <li><span class="sw" style="background:#E8A87C"></span>点缀色 · 暖橘 #E8A87C（头像、加急标记）</li>
+      <li><span class="sw" style="background:#FAF7F2"></span>背景 · 奶油白 #FAF7F2（温暖不刺眼）</li>
+      <li><span class="sw" style="background:#F4D9D9"></span>辅助色 · 淡粉 #F4D9D9（柔和点缀）</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

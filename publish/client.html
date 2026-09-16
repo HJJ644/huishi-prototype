@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="WPEAf0VH0Mc9OSJLmjPf3F">
+<head data-page-node-id="Lbibq9TOFnNdXJFtaRiUOL">
+<meta charset="UTF-8" data-page-node-id="D2lcrQe8aSHGPu5i2TfoT3" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" data-page-node-id="16ClkA3YEglvTO0mEijXMA" />
+<title>约稿需求问卷</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: #F5F3EF; color: #2A2A2A; font-size: 14px; line-height: 1.5;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 0 96px; }
+  .hero {
+    background: linear-gradient(135deg, #5FA47C 0%, #4C8C68 100%);
+    color: #fff; padding: 26px 20px 22px;
+  }
+  .hero .h-title { font-size: 19px; font-weight: 700; letter-spacing: .5px; }
+  .hero .h-sub { font-size: 12px; opacity: .9; margin-top: 6px; line-height: 1.6; }
+  .card {
+    background: #fff; border-radius: 14px; margin: 14px 14px 0; padding: 16px 15px;
+    box-shadow: 0 2px 10px rgba(120,110,90,.08);
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: #2A2A2A; margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+  .card-title::before { content: ""; width: 4px; height: 14px; background: #5FA47C; border-radius: 2px; }
+  .fld { margin-bottom: 12px; }
+  .fld:last-child { margin-bottom: 0; }
+  .fld > label { display: block; font-size: 12.5px; color: #6B645A; margin-bottom: 6px; }
+  .req { color: #E0603A; margin-left: 2px; }
+  .inp, .sel, .tar {
+    width: 100%; border: 1px solid #E3DDD2; background: #FBFAF7; border-radius: 10px;
+    padding: 11px 12px; font-size: 14px; color: #2A2A2A; outline: none; font-family: inherit;
+    transition: border-color .15s;
+  }
+  .inp:focus, .sel:focus, .tar:focus { border-color: #5FA47C; background: #fff; }
+  .tar { resize: vertical; min-height: 70px; }
+  /* 单选 / 多选字段 */
+  .choice-list { display: flex; flex-direction: column; gap: 9px; padding-top: 2px; }
+  .ch-item {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 14px; color: #2A2A2A; line-height: 1.4;
+    cursor: pointer; user-select: none;
+  }
+  .ch-item input[type="radio"], .ch-item input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    width: 18px; height: 18px; margin: 0; flex: 0 0 18px;
+    border: 1.5px solid #DCD5C8; background: #fff; border-radius: 6px;
+    position: relative; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .ch-item input[type="radio"] { border-radius: 50%; }
+  .ch-item input[type="radio"]:hover, .ch-item input[type="checkbox"]:hover { border-color: #8EC9A8; }
+  .ch-item input[type="checkbox"]:checked { background: #5FA47C; border-color: #5FA47C; }
+  .ch-item input[type="checkbox"]:checked::after {
+    content: ''; position: absolute; left: 5.5px; top: 1.5px;
+    width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  }
+  .ch-item input[type="radio"]:checked { border-color: #5FA47C; }
+  .ch-item input[type="radio"]:checked::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #5FA47C;
+  }
+  .ch-empty { font-size: 12px; color: #C8C8C8; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .c-line {
+    border: 1px solid #ECE8E1; border-radius: 12px; padding: 12px; margin-bottom: 12px; background: #FBFAF7;
+  }
+  .c-line-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .c-line-head .ttl { font-size: 12.5px; font-weight: 600; color: #4C8C68; }
+  .c-line-head .del { font-size: 12px; color: #C0584A; background: #FBEDEA; border: none; padding: 5px 10px; border-radius: 8px; }
+  .c-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .c-grid .full { grid-column: 1 / -1; }
+  .c-line-sub { margin-top: 10px; font-size: 12.5px; color: #8A8175; display: flex; justify-content: space-between; }
+  .c-line-sub b { color: #C18A2B; font-weight: 600; }
+  .add-line {
+    width: 100%; border: 1px dashed #B9D3C4; background: #F2F8F4; color: #4C8C68;
+    padding: 11px; border-radius: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .submit-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96);
+    border-top: 1px solid #ECE8E1; backdrop-filter: blur(6px);
+  }
+  .btn-submit {
+    width: 100%; border: none; background: linear-gradient(135deg, #5FA47C, #4C8C68); color: #fff;
+    padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .btn-submit:active { transform: scale(.99); }
+  .success { text-align: center; padding: 60px 30px; }
+  .success .ic { width: 72px; height: 72px; border-radius: 50%; background: #E4F3EA; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+  .success .ic svg { width: 38px; height: 38px; }
+  .success h2 { font-size: 19px; margin: 0 0 8px; color: #2A2A2A; }
+  .success p { font-size: 13px; color: #8A8175; line-height: 1.7; margin: 4px 0; }
+  .success .no { font-size: 15px; font-weight: 700; color: #C18A2B; margin: 14px 0; }
+  .tpl-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tpl-chip { padding: 8px 13px; border: 1px solid #E3DDD2; background: #FBFAF7; border-radius: 20px; font-size: 13px; cursor: pointer; }
+  .tpl-chip.active { border-color: #5FA47C; background: #E4F3EA; color: #4C8C68; font-weight: 600; }
+  .foot { text-align: center; font-size: 11px; color: #B8B0A0; padding: 18px 0 4px; }
+</style>
+</head>
+<body data-page-node-id="Fgt2Dvmc4qZ5Fs91F65bwD">
+<div class="wrap" id="app" data-page-node-id="pKTktoSiSIhEZBiqX2EFqR">
+  <div class="hero" data-page-node-id="4U2qEWmiwHFVBeG66mV898">
+    <div class="h-title" id="heroTitle" data-page-node-id="tVnvtAM6sbTilGZeYcXh9w">约稿需求问卷</div>
+    <div class="h-sub" id="heroSub" data-page-node-id="FW5YeLt8OAbT2zbPJAGfb8">请填写您的约稿需求，提交后画师会尽快与您确认。带 <span style="color:#FFD9CC" data-page-node-id="hzCioeSf4eJllOs2qyVzI0">*</span> 为必填项。</div>
+  </div>
+
+  <div class="card" data-page-node-id="SiuqnXnEr2EuxpfsBF2KS0">
+    <div class="card-title" data-page-node-id="qYqG8wGImJQguavXfcE9GZ">基本信息</div>
+    <div class="fld" data-page-node-id="JVpHHu3H697Ec0HBalFkgx">
+      <label data-page-node-id="5OVgQwaVw9JAxsEWnL4bOz">企划名称 / 主题<span class="req" data-page-node-id="9BMhWL27khZF9gV9yrt0O0">*</span></label>
+      <input class="inp" id="fProj" placeholder="如：小说封面立绘" data-page-node-id="yaKIQkyzD4k1Gefb3diuDJ" />
+    </div>
+    <div class="row2" data-page-node-id="BVhGYwbDvSXHgXG155movB">
+      <div class="fld" data-page-node-id="2tVJTQegpBQHSnEfzvDNED">
+        <label data-page-node-id="y6qWk6soxqeUHTGot0JPor">您的昵称<span class="req" data-page-node-id="cHr0Hhten05tCiE3SjtDZX">*</span></label>
+        <input class="inp" id="fCustomer" placeholder="如何称呼您" data-page-node-id="4Bq5qoAXW557NVKEu5aKBK" />
+      </div>
+      <div class="fld" data-page-node-id="Td6EbHBOJA05aX2bNWNoO4">
+        <label data-page-node-id="MWSPxDoPgIBd9lkETyvuxj">联系方式<span class="req" data-page-node-id="jhCFykFLGWgCIuK4Tazcni">*</span></label>
+        <input class="inp" id="fContact" placeholder="微信 / QQ / 邮箱" data-page-node-id="9dHdqXruuyAFf1TfKjnomH" />
+      </div>
+    </div>
+    <div class="fld" data-page-node-id="cVDMbkBZWT7T2zjcBHC4zI">
+      <label data-page-node-id="Z6l0nJSkt97p88VVTVMtKf">接单平台</label>
+      <input class="inp" id="fPlatform" placeholder="如：米画师 / 闲鱼 / 私信" data-page-node-id="bi9DWwIWtkgBcuE7WbY3kE" />
+    </div>
+    <div class="row2" data-page-node-id="IKi15EbyPCDGIHbKnBKWAP">
+      <div class="fld" data-page-node-id="8HMu5U5OszYNKw75tbwE7j">
+        <label data-page-node-id="Ros5SjzHUjrSrBkEfAxxig">期望下单日期</label>
+        <input class="inp" id="fStart" type="date" data-page-node-id="YiwQhJJqSHVBNP4QW83ybf" />
+      </div>
+      <div class="fld" data-page-node-id="EcGAnauZERXwfi7tRqhknq">
+        <label data-page-node-id="CDuaz6iEGB94ffK6DfoD62">截稿时间</label>
+        <input class="inp" id="fEnd" type="date" data-page-node-id="nhYMmVGM6maeNP5o1F1Mef" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="tplCard" style="display:none;" data-page-node-id="FBymfMDCV9eMH9URm50Ln9">
+    <div class="card-title" data-page-node-id="dmmFLZTyI4386sVEVi2R57">问卷模板</div>
+    <div class="tpl-pick" id="tplPick" data-page-node-id="FmR8nUqSlxsrgaLeKTBlhU"></div>
+  </div>
+
+  <div class="card" data-page-node-id="twp1qKQdRBdiONI6TIdsqa">
+    <div class="card-title" data-page-node-id="FxEEYAn0hUKS76WfU5ZQNK">制品需求<span class="req" data-page-node-id="oWzDCTRuYm4FxrDpFZDrOj">*</span></div>
+    <div id="lines" data-page-node-id="z3xNaoglQPVn08Ckq84HUs"></div>
+    <button class="add-line" onclick="addLine()" data-page-node-id="3akExXtXVA28HpwhspnVno">+ 添加制品</button>
+  </div>
+
+  <div class="card" data-page-node-id="zDb3AxY6UzCzvjPcbU2nst">
+    <div class="card-title" data-page-node-id="xHpQfLJ8dP1XsY03JzsSbD">加急 / 公开 / 支付</div>
+    <div class="fld" data-page-node-id="xArbR6BGnABmrwoLHkSvIt">
+      <label data-page-node-id="vZRsrQVzrzN9U4BWvB2LEu">加急方式</label>
+      <select class="sel" id="fRush" data-page-node-id="6SQhwcWklZrraLFAKqpVHJ"></select>
+    </div>
+    <div class="fld" data-page-node-id="qqG8x4pHAok86LBVjpNQ2N">
+      <label data-page-node-id="X4V0Aw8u1CVrDWDAHEaYBr">公开方式</label>
+      <select class="sel" id="fPublic" data-page-node-id="JrdbRDetroWzVWpx8KgReN"></select>
+    </div>
+    <div class="fld" data-page-node-id="09ZNkNe5EXFxyJBd7jKHyO">
+      <label data-page-node-id="JgzErBZ5Mb1edJOg25ewSW">支付方式</label>
+      <select class="sel" id="fPay" data-page-node-id="1AVRlUQ7Yp4s591e25DJBF"></select>
+    </div>
+  </div>
+
+  <div class="card" id="tplFieldsCard" style="display:none;" data-page-node-id="MZ4SKOmxoDmXDROz41gmMd">
+    <div class="card-title" id="tplFieldsTitle" data-page-node-id="8pFP0iM0ewDPaDtv5waTjq">补充信息</div>
+    <div id="tplFields" data-page-node-id="LXpX91EXGwYtCoqaUw3J2R"></div>
+  </div>
+
+  <div class="card" data-page-node-id="rqMLM8e2CCPO5DyXGC9M4B">
+    <div class="card-title" data-page-node-id="Zn6gn3aiFBLhSIgWnUG1SA">备注</div>
+    <textarea class="tar" id="fRemark" placeholder="其他想告诉画师的内容、参考链接等"></textarea>
+  </div>
+
+  <div class="foot" data-page-node-id="3LvgimzWCjn2LxcYVnYbyK">本页面由「绘事工作台」生成 · 仅用于本次约稿需求收集</div>
+</div>
+
+<div class="submit-bar" id="submitBar" data-page-node-id="w6Hx3Y5G8fXoyMdYOtS7Tm">
+  <button class="btn-submit" onclick="submitQuestionnaire()" data-page-node-id="Kk3DYl7twVGKClzCCOp5Y0">提交需求</button>
+</div>
+
+<script>
+  const STORAGE_KEY = 'huishi_workbench_v1';
+  function loadStore(key, def) {
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); return d[key] !== undefined ? d[key] : def; }
+    catch (e) { return def; }
+  }
+  function saveStore(key, val) {
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); d[key] = val; localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+    catch (e) {}
+  }
+
+  // 读取后台配置（模板 / 费用），与客户共用同一份 localStorage
+  const orderTemplates = loadStore('orderTemplates', []) || [];
+  const feeSettings = loadStore('feeSettings', {}) || {};
+  const depositPct = (feeSettings && feeSettings.depositPct) || 30;
+
+  // 费用选项：优先用后台设置，未设置则用合理默认
+  function usageOpts() {
+    const arr = (feeSettings.usageFees && feeSettings.usageFees.length) ? feeSettings.usageFees : [{name:'商用', val:2}, {name:'个人', val:1}];
+    return arr.map(f => ({name: f.name, val: f.val}));
+  }
+  function rushOpts() {
+    const arr = (feeSettings.rushFees && feeSettings.rushFees.length) ? feeSettings.rushFees : [{name:'不加急', val:1}, {name:'加急', val:1.5}];
+    return arr;
+  }
+  function pubOpts() {
+    const arr = (feeSettings.publicFees && feeSettings.publicFees.length) ? feeSettings.publicFees : [{name:'不公开', val:1}, {name:'公开', val:1.2}];
+    return arr;
+  }
+  function payOpts() {
+    const arr = (feeSettings.payFees && feeSettings.payFees.length) ? feeSettings.payFees : [{name:'微信', fee:0}, {name:'支付宝', fee:0}, {name:'闲鱼', fee:0}];
+    return arr;
+  }
+  function fillSelect(sel, opts, withRate) {
+    sel.innerHTML = opts.map(o => {
+      const v = withRate ? (o.val != null ? o.val : 1) : (o.fee != null ? o.fee : 0);
+      const txt = withRate ? (o.name + (o.val && o.val != 1 ? ' ×' + o.val : '')) : (o.name + ((o.fee || 0) > 0 ? '（' + o.fee + '%）' : ''));
+      return `<option value="${o.name}" data-val="${v}">${txt}</option>`;
+    }).join('');
+  }
+
+  // ---- 模板选择（?tpl= 锁定；否则显示选择器）----
+  const params = new URLSearchParams(location.search);
+  const lockTpl = params.get('tpl');
+  let activeTpl = lockTpl || '';
+
+  function renderTplPicker() {
+    const tplCard = document.getElementById('tplCard');
+    const pick = document.getElementById('tplPick');
+    if (lockTpl) { tplCard.style.display = 'none'; return; }
+    if (!orderTemplates.length) { tplCard.style.display = 'none'; return; }
+    tplCard.style.display = '';
+    const chips = [{id:'', name:'自由填写'}].concat(orderTemplates.map(t => ({id: t.id, name: t.name})));
+    pick.innerHTML = chips.map(c => `<div class="tpl-chip ${c.id === activeTpl ? 'active' : ''}" onclick="selectTpl('${c.id}')">${c.name}</div>`).join('');
+  }
+  function selectTpl(id) {
+    activeTpl = id || '';
+    document.querySelectorAll('#tplPick .tpl-chip').forEach(el => el.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTplFields();
+  }
+
+  function renderTplFields() {
+    const card = document.getElementById('tplFieldsCard');
+    const box = document.getElementById('tplFields');
+    const tpl = orderTemplates.find(t => t.id === activeTpl);
+    if (!tpl || !tpl.fields || !tpl.fields.length) { card.style.display = 'none'; box.innerHTML = ''; return; }
+    card.style.display = '';
+    document.getElementById('tplFieldsTitle').textContent = '补充信息 · ' + tpl.name;
+    box.innerHTML = tpl.fields.map((f, i) => {
+      const id = 'cf_' + i;
+      const req = f.required ? '<span class="req">*</span>' : '';
+      let ctrl;
+      if (f.type === 'textarea') ctrl = `<textarea class="tar" id="${id}" data-cf="${f.key}" data-label="${f.label}" placeholder="${f.placeholder || ''}"></textarea>`;
+      else if (f.type === 'number') ctrl = `<input class="inp" id="${id}" type="number" data-cf="${f.key}" data-label="${f.label}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />`;
+      else if (f.type === 'date') ctrl = `<input class="inp" id="${id}" type="date" data-cf="${f.key}" data-label="${f.label}" />`;
+      else if (f.type === 'select') {
+        const opts = (f.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+        ctrl = `<select class="sel" id="${id}" data-cf="${f.key}" data-label="${f.label}"><option value="">请选择</option>${opts}</select>`;
+      }
+      else if (f.type === 'radio' || f.type === 'checkbox') {
+        const multi = f.type === 'checkbox';
+        const list = (f.options || []).length
+          ? f.options.map(o => `<label class="ch-item"><input type="${multi ? 'checkbox' : 'radio'}" name="cf_${f.key}" value="${o}" /><span>${o}</span></label>`).join('')
+          : '<div class="ch-empty">（该字段未设置候选项）</div>';
+        ctrl = `<div class="choice-list" data-cf-group="${f.key}" data-label="${f.label}" data-multi="${multi ? '1' : '0'}">${list}</div>`;
+      } else ctrl = `<input class="inp" id="${id}" type="text" data-cf="${f.key}" data-label="${f.label}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} />`;
+      return `<div class="fld"><label>${f.label}${req}</label>${ctrl}</div>`;
+    }).join('');
+  }
+
+  // ---- 制品行 ----
+  function addLine() {
+    const box = document.getElementById('lines');
+    const div = document.createElement('div');
+    div.className = 'c-line';
+    const uOpts = usageOpts().map(o => `<option value="${o.name}" data-rate="${o.val}">${o.name}${o.val != 1 ? ' ×' + o.val : ''}</option>`).join('');
+    div.innerHTML = `
+      <div class="c-line-head"><span class="ttl">制品</span><button class="del" onclick="this.closest('.c-line').remove();recalcTotal()">删除</button></div>
+      <div class="c-grid">
+        <div class="full fld"><label>制品名称<span class="req">*</span></label><input class="inp cl-name" placeholder="如：立绘单人·半身" /></div>
+        <div class="fld"><label>单价(元)</label><input class="inp cl-price" type="number" value="0" oninput="calcLine(this)" /></div>
+        <div class="fld"><label>加价费(元)</label><input class="inp cl-markup" type="number" value="0" oninput="calcLine(this)" /></div>
+        <div class="fld"><label>数量</label><input class="inp cl-qty" type="number" value="1" oninput="calcLine(this)" /></div>
+        <div class="fld"><label>单位</label><input class="inp cl-unit" placeholder="件/张" /></div>
+        <div class="fld"><label>用途</label><select class="sel cl-usage" onchange="calcLine(this)">${uOpts}</select></div>
+      </div>
+      <div class="c-line-sub"><span>实际单价 ¥<b class="cl-actual">0.00</b></span><span>小计 ¥<b class="cl-sub">0.00</b></span></div>`;
+    box.appendChild(div);
+    calcLine(div.querySelector('.cl-price'));
+    recalcTotal();
+  }
+  function calcLine(el) {
+    const line = el.closest('.c-line');
+    const price = parseFloat(line.querySelector('.cl-price').value) || 0;
+    const markup = parseFloat(line.querySelector('.cl-markup').value) || 0;
+    const qty = parseFloat(line.querySelector('.cl-qty').value) || 0;
+    const rate = parseFloat(line.querySelector('.cl-usage').selectedOptions[0]?.dataset.rate || 1);
+    const actual = price + markup;
+    const sub = qty * actual * rate;
+    line.querySelector('.cl-actual').textContent = actual.toFixed(2);
+    line.querySelector('.cl-sub').textContent = sub.toFixed(2);
+    recalcTotal();
+  }
+  function recalcTotal() { /* 客户端仅展示用，后台会重算 */ }
+
+  function collectLines() {
+    return [...document.querySelectorAll('#lines .c-line')].map(line => {
+      const name = line.querySelector('.cl-name').value.trim();
+      if (!name) return null;
+      const price = parseFloat(line.querySelector('.cl-price').value) || 0;
+      const markup = parseFloat(line.querySelector('.cl-markup').value) || 0;
+      const qty = parseFloat(line.querySelector('.cl-qty').value) || 0;
+      const unit = line.querySelector('.cl-unit').value.trim() || '件';
+      const uSel = line.querySelector('.cl-usage');
+      const usageName = uSel.value;
+      const usageRate = parseFloat(uSel.selectedOptions[0]?.dataset.rate || 1);
+      const actualPrice = price + markup;
+      const sub = qty * actualPrice * usageRate;
+      return { name, unit, price, markup, actualPrice, qty, usageRate, usageName, sub };
+    }).filter(Boolean);
+  }
+
+  function genClientOrderNo() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    const base = '' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate());
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return 'CL' + base + '-' + rand;
+  }
+
+  function submitQuestionnaire() {
+    const proj = document.getElementById('fProj').value.trim();
+    if (!proj) { alert('请填写企划名称'); return; }
+    const customer = document.getElementById('fCustomer').value.trim();
+    if (!customer) { alert('请填写您的昵称'); return; }
+    const contact = document.getElementById('fContact').value.trim();
+    if (!contact) { alert('请填写联系方式'); return; }
+    const lines = collectLines();
+    if (!lines.length) { alert('请至少添加一个制品并填写名称'); return; }
+
+    // 模板必填校验
+    const tpl = orderTemplates.find(t => t.id === activeTpl);
+    const customFields = [];
+    document.querySelectorAll('#tplFields .fld').forEach(fld => {
+      const grp = fld.querySelector('[data-cf-group]');
+      if (grp) {   // 单选 / 多选组：取勾选项，多选用「、」连接
+        const vals = [...grp.querySelectorAll('input:checked')].map(i => i.value);
+        customFields.push({ key: grp.dataset.cfGroup, label: grp.dataset.label || grp.dataset.cfGroup, value: vals.join('、') });
+        return;
+      }
+      const inp = fld.querySelector('[data-cf]');
+      if (inp) customFields.push({ key: inp.dataset.cf, label: inp.dataset.label || inp.dataset.cf, value: (inp.value || '').trim() });
+    });
+    if (tpl && tpl.fields && tpl.fields.length) {
+      for (const f of tpl.fields) {
+        if (f.required) {
+          const v = (customFields.find(c => c.key === f.key) || {}).value || '';
+          if (!v) { alert('请填写必填项：' + f.label); return; }
+        }
+      }
+    }
+
+    // 费用选项
+    const rSel = document.getElementById('fRush'), pSel = document.getElementById('fPublic'), paySel = document.getElementById('fPay');
+    const rushName = rSel.value || '不加急', rushRate = parseFloat(rSel.selectedOptions[0]?.dataset.val || 1);
+    const pubName = pSel.value || '不公开', pubRate = parseFloat(pSel.selectedOptions[0]?.dataset.val || 1);
+    const pay = paySel.value || '', feePct = parseFloat(paySel.selectedOptions[0]?.dataset.val || 0);
+
+    const itemsSub = lines.reduce((s, l) => s + l.sub, 0);
+    const feeAmt = feePct > 0 ? itemsSub * feePct / 100 : 0;
+    const payable = itemsSub + feeAmt;
+    const discount = 0;
+    const actual = Math.max(0, payable - discount);
+    const deposit = (depositPct > 0) ? payable * depositPct / 100 : 0;
+    const balance = Math.max(0, actual - deposit);
+
+    const order = {
+      id: Date.now(),
+      proj,
+      startTime: document.getElementById('fStart').value || '',
+      endTime: document.getElementById('fEnd').value || '',
+      platform: document.getElementById('fPlatform').value.trim() || '',
+      customer, contact,
+      remark: document.getElementById('fRemark').value.trim() || '',
+      pay, feePct, rushName, rushRate, pubName, pubRate,
+      lines, extras: [],
+      payable, feeAmt, discount, actual, deposit, balance,
+      orderNo: genClientOrderNo(),
+      createdAt: Date.now(),
+      templateId: activeTpl || '',
+      templateName: tpl ? tpl.name : '',
+      customFields,
+      source: 'client',
+      status: 'client'
+    };
+
+    // 追加到后台订单列表（与客户共用 localStorage）
+    const orders = loadStore('orders', []) || [];
+    orders.unshift(order);
+    saveStore('orders', orders);
+
+    showSuccess(order.orderNo);
+  }
+
+  function showSuccess(no) {
+    document.getElementById('app').innerHTML = `
+      <div class="hero"><div class="h-title">提交成功</div><div class="h-sub">感谢您的信任，以下是本次需求回执。</div></div>
+      <div class="success">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#5FA47C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h2>需求已提交</h2>
+        <p>画师收到后将尽快与您确认细节与档期。</p>
+        <div class="no">回执单号：${no}</div>
+        <p style="font-size:12px;">您可截图保存本页面作为记录。</p>
+      </div>`;
+    document.getElementById('submitBar').style.display = 'none';
+  }
+
+  // ---- 初始化 ----
+  (function init() {
+    if (params.get('title')) document.getElementById('heroTitle').textContent = params.get('title');
+    fillSelect(document.getElementById('fRush'), rushOpts(), true);
+    fillSelect(document.getElementById('fPublic'), pubOpts(), true);
+    fillSelect(document.getElementById('fPay'), payOpts(), false);
+    renderTplPicker();
+    renderTplFields();
+    addLine();
+  })();
+</script>
+</body>
+</html>
